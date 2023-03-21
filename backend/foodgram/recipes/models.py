@@ -45,8 +45,9 @@ class Recipe(models.Model):
         through='TagRecipe',
         verbose_name='Теги',
         help_text='Выберите теги')
-    image = models.ImageField()
+    # image = models.ImageField()
     name = models.CharField(
+        max_length=100,
         verbose_name='Название блюда',
         help_text='Введите название блюда'
     )
@@ -80,11 +81,11 @@ class Recipe(models.Model):
 
 
 class IngredientRecipe(models.Model):
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.SET_NULL)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     quantity = models.IntegerField(verbose_name='Количество')
 
 
 class TagRecipe(models.Model):
-    ingredient = models.ForeignKey(Tag, on_delete=models.SET_NULL)
+    ingredient = models.ForeignKey(Tag, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
