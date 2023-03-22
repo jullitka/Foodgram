@@ -1,11 +1,20 @@
-from django.http import Http404
+from django.contrib.auth import get_user_model
 
 from rest_framework import filters
 from rest_framework.permissions import IsAdminUser
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from api.serializers import IngredientSerializer, TagSerializer
+from api.serializers import IngredientSerializer, TagSerializer, UserSerializer
 from recipes.models import Ingredient, Tag
+
+from users.models import User
+
+
+class UserViewSet(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    # permission_classes = (IsAdminUser,)
+
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
