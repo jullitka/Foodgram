@@ -119,3 +119,15 @@ SIMPLE_JWT = {
    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
    'AUTH_HEADER_TYPES': ('Bearer',),
 } 
+
+DJOSER = {
+    'HIDE_USERS': False,
+    #'SERIALIZERS': {
+    #    'users': 'users.serializers.CustomUserSerializer',
+     #   'user_create': 'users.serializers.UserRegistrationSerializer',
+    #},
+    'PERMISSIONS': {
+        'user': ['rest_framework.permissions.AllowAny'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
+    },
+}
