@@ -1,16 +1,13 @@
 from django.contrib.auth import get_user_model
-from rest_framework.serializers import (BooleanField, EmailField, ModelSerializer,
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from rest_framework.serializers import (ReadOnlyField, EmailField, ModelSerializer,
                                         RegexField,  SerializerMethodField)
 
 from recipes.models import Ingredient, Recipe, Tag
 
 from users.models import User, Subscription
 
-class UserSerializer(ModelSerializer):
-    email = EmailField(max_length=254,
-                       required=True)
-    username = RegexField(max_length=150,
-                          regex=r'^[\w.@+-]+\z')
+class CustomUserSerializer(UserSerializer):
     is_subscribed = SerializerMethodField()
 
     class Meta:
@@ -25,10 +22,19 @@ class UserSerializer(ModelSerializer):
         if request.user.is_anonymous:
             return False
         return Subscription.objects.filter(author=obj, user=request.user).exists()
+ 
 
+class CustomUserCreateSerializer(UserCreateSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'email', 'id', 'username',
+            'first_name', 'last_name'
+        )
 
 class SubscribeSerializer(ModelSerializer):
-    is_subscribed = BooleanField(read_only=True)
+    is_subscribed = SerializerMethodField()
+
     #recipes = SerializerMethodField()
 
     class Meta:
@@ -39,6 +45,9 @@ class SubscribeSerializer(ModelSerializer):
            # 'recipes', 'recipes_count'
         )
 
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        return Subscription.objects.filter(author=obj, user=request.user).exists()
     #def get_recipes(self, id):
         #return Recipe.objects.filter(author = )
     
