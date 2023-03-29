@@ -98,7 +98,7 @@ class TagViewSet(ReadOnlyModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    # serializer_class = RecipeSerializer
     permission_classes = (AllowAny,)
 
     def perform_create(self, serializer):
