@@ -1,12 +1,23 @@
+import base64
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.generics import get_object_or_404
-from rest_framework.serializers import (ModelSerializer, IntegerField, Serializer,
+from rest_framework.serializers import (ModelSerializer, IntegerField, ImageField,
                                         SerializerMethodField, PrimaryKeyRelatedField)
 
 from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag, TagRecipe
 
 from users.models import User, Subscription
+
+class Base64ImageField(ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')  
+            ext = format.split('/')[-1]  
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+        return super().to_internal_value(data)
 
 class CustomUserSerializer(UserSerializer):
     is_subscribed = SerializerMethodField()
@@ -66,7 +77,7 @@ class TagSerializer(ModelSerializer):
         model = Tag
 
 class IngredientAmountSerializer(ModelSerializer):
-    id = PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    id = IntegerField()
     amount = IntegerField(write_only=True)
     class Meta:
         fields = (
@@ -80,14 +91,19 @@ class RecipeCreateSerializer(ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
     ingredients = IngredientAmountSerializer(many=True)
+    image = Base64ImageField()
 
     class Meta:
         fields = (
             'id',
             'tags',
             'author',
-            'name',
             'ingredients',
+            # 'is_favorited',
+            # 'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
             'cooking_time'
         )
         model = Recipe
@@ -98,11 +114,8 @@ class RecipeCreateSerializer(ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
         recipe.save()
         recipe.tags.set(tags)
-        print(*ingredients)
         for ingredient in ingredients:
-            print(ingredient)
             amount = ingredient['amount']
-            print(amount)
             ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
             IngredientRecipe.objects.create(
                 ingredient=ingredient,
@@ -126,22 +139,31 @@ class RecipeCreateSerializer(ModelSerializer):
 class RecipeSerializer(ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-    ingredients = IngredientSerializer(many=True)
+    ingredients = IngredientAmountSerializer(many=True)
+    image = Base64ImageField()
 
     class Meta:
         fields = (
             'id',
             'tags',
             'author',
-            'name',
             'ingredients',
+            # 'is_favorited',
+            # 'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
             'cooking_time'
         )
         model = Recipe
 
-    #def create(self, validated_data):
-    #    tags = validated_data.pop('tags')
-    #    recipe = Recipe.objects.create(**validated_data)
-    #    recipe.save()
-    #    recipe.tags.set(tags)
-    #    return recipe 
+
+class FavoriteSerializer(ModelSerializer):
+    class Meta:
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time'
+        )
+        model = Recipe

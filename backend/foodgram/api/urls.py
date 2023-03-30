@@ -15,11 +15,6 @@ router.register(r'recipes', RecipeViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('', include('djoser.urls')),
-    path(
-        'users/<int:pk>/subscribe/',
-        CustomUserViewSet.as_view({'get': 'subscribe',}),
-        name='subscribe'
-    ),
     path('auth/', include('djoser.urls.authtoken')),
 ]
 
