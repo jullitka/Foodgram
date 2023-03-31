@@ -5,10 +5,10 @@ from api.views import IngredientViewSet, TagViewSet, CustomUserViewSet, RecipeVi
 
 router = SimpleRouter()
 
-router.register(r'users', CustomUserViewSet)
-router.register(r'ingredients', IngredientViewSet)
-router.register(r'tags', TagViewSet)
-router.register(r'recipes', RecipeViewSet)
+router.register(r'users', CustomUserViewSet, basename='users')
+router.register(r'ingredients', IngredientViewSet, basename='ingredients')
+router.register(r'tags', TagViewSet, basename='tags')
+router.register(r'recipes', RecipeViewSet, basename='recipes')
 
 
 
