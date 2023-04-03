@@ -6,18 +6,20 @@ from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (AllowAny, IsAdminUser,
+from rest_framework.permissions import (AllowAny, IsAdminUser, 
                                         IsAuthenticated, IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
                                    HTTP_400_BAD_REQUEST)
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from api.serializers import (FavoriteSerializer, IngredientSerializer, RecipeSerializer,
-                             RecipeCreateSerializer, SubscribeSerializer, TagSerializer,
+from api.paginations import CustomPagination
+from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
+from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
+                             RecipeSerializer, RecipeShortSerializer,
+                             SubscribeSerializer, TagSerializer,
                              CustomUserSerializer)
 from recipes.models import Favorite, Ingredient, IngredientRecipe, Recipe, ShoppingCart, Tag
-
 from users.models import Subscription, User
 
 
@@ -81,7 +83,7 @@ class CustomUserViewSet(UserViewSet):
 class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, SearchFilter)
     search_fields = ('^name',)
 
@@ -89,7 +91,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
 class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (SearchFilter,)
     search_fields = ('^name',)
 
@@ -97,6 +99,9 @@ class TagViewSet(ReadOnlyModelViewSet):
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (AllowAny,)
+    pagination_class = CustomPagination
+    filter_backends = (DjangoFilterBackend,)
+    # filterset_class = RecipeFilter
 
     @action(detail=True,
             methods=['post', 'delete'],
@@ -116,7 +121,7 @@ class RecipeViewSet(ModelViewSet):
                 favorite = Favorite.objects.create(
                     user=user, recipe=recipe
                 )
-                serializer = FavoriteSerializer(recipe,
+                serializer = RecipeShortSerializer(recipe,
                                                 context={"request": request})
                 return Response(serializer.data, status=HTTP_201_CREATED)
             
@@ -148,7 +153,7 @@ class RecipeViewSet(ModelViewSet):
                 favorite = ShoppingCart.objects.create(
                     user=user, recipe=recipe
                 )
-                serializer = FavoriteSerializer(recipe,
+                serializer = RecipeShortSerializer(recipe,
                                                 context={"request": request})
                 return Response(serializer.data, status=HTTP_201_CREATED)
             
@@ -182,7 +187,7 @@ class RecipeViewSet(ModelViewSet):
            # print(querys)
             #r = get_object_or_404(Recipe, name=recipe)
             #print(r)
-        serializer = FavoriteSerializer(
+        serializer = RecipeShortSerializer(
             self.paginate_queryset(queryset),
             many=True,
             context={'request': request}
