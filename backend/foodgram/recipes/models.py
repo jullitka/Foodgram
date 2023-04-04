@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator
 from django.db.models import (CASCADE, CharField, DateTimeField, IntegerField,
                               ImageField, ForeignKey, ManyToManyField, Model,
                               SlugField, TextField, UniqueConstraint)
@@ -13,9 +13,15 @@ class Tag(Model):
         verbose_name='Тег'
     )
     color = CharField(
-        max_length=10,
+        max_length=7,
         unique=True,
-        verbose_name='Цвет')
+        verbose_name='Цвет',
+        validators=[
+            RegexValidator(
+                regex='^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+                message='Необходимо ввести цвет в формате HEX'
+            )
+        ])
     slug = SlugField(unique=True, verbose_name='Адрес')
 
     def __str__(self):

@@ -1,32 +1,18 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
-from django.db.models import (CASCADE, CharField, EmailField,
+from django.db.models import (CASCADE, EmailField,
                               ForeignKey, Model, UniqueConstraint)
 
 
 class User(AbstractUser):
-    REQUIRED_FIELDS = ['username', 'password', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     USERNAME_FIELD = 'email'
-    username = CharField(
-        max_length=150,
-        unique=True,
-        validators=[RegexValidator(regex=r'^[\w.@+-]+\z')]
-    )
     email = EmailField(
         max_length=254,
         unique=True
     )
-    password = CharField(
-        max_length=150,
-        blank=False
-    )
-    first_name = CharField(max_length=150)
-    last_name = CharField(max_length=150)
-
     def __str__(self):
         return self.username
     
-
 
 class Subscription(Model):
     user = ForeignKey(

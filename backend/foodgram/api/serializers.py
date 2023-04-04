@@ -1,19 +1,16 @@
 import base64
 from django.db import transaction
-from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.validators import MinValueValidator
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework.serializers import (ModelSerializer, IntegerField, ImageField,
+from rest_framework.serializers import (IntegerField, ImageField, ModelSerializer,
                                         SerializerMethodField, PrimaryKeyRelatedField)
-from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
-                                   HTTP_400_BAD_REQUEST)
+from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from recipes.models import (Favorite, Ingredient, IngredientRecipe,
-                            Recipe, ShoppingCart, Tag, TagRecipe)
-
+                            Recipe, ShoppingCart, Tag)
 from users.models import User, Subscription
 
 
@@ -55,7 +52,8 @@ class CustomUserCreateSerializer(UserCreateSerializer):
             'id',
             'username',
             'first_name',
-            'last_name'
+            'last_name',
+            'password'
         )
 
 
@@ -91,13 +89,15 @@ class SubscribeSerializer(CustomUserSerializer):
             )
         return data
 
-    def recipes_count(self, obj):
+    def get_recipes_count(self, obj):
         return obj.recipes.count()
     
     def get_recipes(self, obj):
         request = self.context.get('request')
         recipes_limit = request.GET.get('recipes_limit')
-        recipes = obj.recipes.all()[:int(recipes_limit)]
+        recipes = obj.recipes.all()
+        if recipes_limit:
+            recipes = recipes[:int(recipes_limit)]
         return RecipeShortSerializer(recipes, many=True).data
     
 
@@ -189,7 +189,7 @@ class RecipeCreateSerializer(ModelSerializer):
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        self.ingredients_to_recipe(self, ingredients, recipe)
+        self.ingredients_to_recipe(ingredients, recipe)
         return recipe 
     
     @transaction.atomic
@@ -242,7 +242,7 @@ class RecipeCreateSerializer(ModelSerializer):
             raise ValidationError({
                 'tags': 'Нужно выбрать хотя бы один тег'
             })
-        elif len(value) == len(set(value)):
+        elif len(value) != len(set(value)):
             raise ValidationError({
                 'tags': 'Теги не могут повторяться'
             })

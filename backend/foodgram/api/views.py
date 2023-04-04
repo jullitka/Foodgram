@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
@@ -6,8 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (AllowAny, IsAdminUser, 
-                                        IsAuthenticated, IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
                                    HTTP_400_BAD_REQUEST)
@@ -15,19 +14,21 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from api.paginations import CustomPagination
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
-                             RecipeSerializer, RecipeShortSerializer,
-                             SubscribeSerializer, TagSerializer,
-                             CustomUserSerializer)
-from recipes.models import Favorite, Ingredient, IngredientRecipe, Recipe, ShoppingCart, Tag
+from api.serializers import (CustomUserSerializer, IngredientSerializer,
+                             RecipeCreateSerializer, RecipeSerializer,
+                             RecipeShortSerializer, SubscribeSerializer,
+                             TagSerializer)
+from recipes.models import (Favorite, Ingredient,
+                            IngredientRecipe, Recipe,
+                            ShoppingCart, Tag)
 from users.models import Subscription, User
 
 
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = (IsAuthenticated,)
-    pagination_class = PageNumberPagination
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    pagination_class = CustomPagination
 
     @action(detail=True,
             methods=['post', 'delete'],
@@ -98,7 +99,7 @@ class TagViewSet(ReadOnlyModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthorOrReadOnly,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     # filterset_class = RecipeFilter
@@ -173,26 +174,30 @@ class RecipeViewSet(ModelViewSet):
         """Получение списка продуктов из рецептов"""
         user = request.user
         shopping_cart = ShoppingCart.objects.filter(user=user).values('recipe')
-        recipes_id = [recipe['recipe'] for recipe in shopping_cart]
-        print(recipes_id)
-        buy_list = IngredientRecipe.objects.filter(recipe__in=recipes_id).values(
-            'ingredient'
-        ).annotate(
-            amount=sum(int('amount'))
-        )
-        print(buy_list)
-           # querys = IngredientRecipe.objects.filter(
-           #     recipe=recipe.id
-           # ).values('ingredient')
-           # print(querys)
-            #r = get_object_or_404(Recipe, name=recipe)
-            #print(r)
-        serializer = RecipeShortSerializer(
-            self.paginate_queryset(queryset),
-            many=True,
-            context={'request': request}
-        )
-        return self.get_paginated_response(serializer.data)
+        recipes = [recipe['recipe'] for recipe in shopping_cart]
+        buy_list = IngredientRecipe.objects.filter(recipe__in=recipes).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+            ).annotate(total_amount=Sum('amount'))
+        ingredients = []
+        for ingredient in buy_list:
+            ingredient_text = (
+                f"- {ingredient['ingredient__name']} "
+                f"({ingredient['ingredient__measurement_unit']})"
+                f" - {ingredient['total_amount']}"
+            )
+            ingredients.append(ingredient_text)
+            filename = f'shopping_cart_for_{user.username}'
+            '\n'.join(ingredients)
+        response = HttpResponse('Cписок покупок:\n' + '\n'.join(ingredients),
+                                content_type='text/plain')
+        response['Content-Disposition'] = (f'attachment; filename={filename}')
+        return response
+
+
+#        response = HttpResponse(my_data, headers={
+#...     'Content-Type': 'application/vnd.ms-excel',
+#...     'Content-Disposition': 'attachment; filename="foo.xls"',
+#... })
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
