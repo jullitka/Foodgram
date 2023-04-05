@@ -1,7 +1,8 @@
 from django.core.validators import RegexValidator
-from django.db.models import (CASCADE, CharField, DateTimeField, IntegerField,
-                              ImageField, ForeignKey, ManyToManyField, Model,
-                              SlugField, TextField, UniqueConstraint)
+from django.db.models import (CASCADE, CharField, DateTimeField,
+                              IntegerField, ImageField, ForeignKey,
+                              ManyToManyField, Model, SlugField,
+                              TextField, UniqueConstraint)
 
 from users.models import User
 
@@ -24,6 +25,10 @@ class Tag(Model):
         ])
     slug = SlugField(unique=True, verbose_name='Адрес')
 
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+
     def __str__(self):
         return self.name
 
@@ -37,11 +42,14 @@ class Ingredient(Model):
         max_length=10,
         verbose_name='Единица измерения'
         )
-    
+
     class Meta:
-        constraints = [
-            UniqueConstraint(fields=('name', 'measurement_unit'), name='ingredient')
-        ]
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+        constraints = [UniqueConstraint(
+            fields=('name', 'measurement_unit'),
+            name='ingredient'
+        )]
 
     def __str__(self):
         return self.name
@@ -63,7 +71,7 @@ class Recipe(Model):
         related_name='recipes'
     )
     image = ImageField(
-        verbose_name= 'Картинка',
+        verbose_name='Картинка',
         upload_to='recipes/'
     )
     name = CharField(
@@ -103,15 +111,36 @@ class IngredientRecipe(Model):
     ingredient = ForeignKey(
         Ingredient,
         on_delete=CASCADE,
-        related_name='ingredient'
+        related_name='ingredient',
+        verbose_name='Название ингредиента'
     )
-    recipe = ForeignKey(Recipe, on_delete=CASCADE)
+    recipe = ForeignKey(
+        Recipe,
+        on_delete=CASCADE,
+        verbose_name='Рецепт'
+    )
     amount = IntegerField(verbose_name='Количество')
+
+    class Meta:
+        verbose_name = 'Ингредиент для рецепта'
+        verbose_name_plural = 'Ингредиенты для рецепта'
 
 
 class TagRecipe(Model):
-    tag = ForeignKey(Tag, on_delete=CASCADE)
-    recipe = ForeignKey(Recipe, on_delete=CASCADE)
+    tag = ForeignKey(
+        Tag,
+        on_delete=CASCADE,
+        verbose_name='Тег'
+    )
+    recipe = ForeignKey(
+        Recipe,
+        on_delete=CASCADE,
+        verbose_name='Рецепт'
+    )
+
+    class Meta:
+        verbose_name = 'Тег рецепта'
+        verbose_name_plural = 'Теги'
 
 
 class Favorite(Model):
@@ -129,13 +158,16 @@ class Favorite(Model):
     )
 
     class Meta:
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
         constraints = [
             UniqueConstraint(fields=('recipe', 'user'), name='favorite')
         ]
 
     def __str__(self):
         return f'{self.recipe} в избранном {self.user}'
-    
+
+
 class ShoppingCart(Model):
     user = ForeignKey(
         User,
@@ -149,8 +181,10 @@ class ShoppingCart(Model):
         verbose_name='Рецепт',
         on_delete=CASCADE
     )
-    
+
     class Meta:
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Список покупок'
         constraints = [
             UniqueConstraint(fields=('recipe', 'user'), name='shopping_cart')
         ]

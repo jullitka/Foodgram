@@ -10,9 +10,10 @@ class User(AbstractUser):
         max_length=254,
         unique=True
     )
+
     def __str__(self):
-        return self.username
-    
+        return f'{self.first_name} {self.last_name}'
+
 
 class Subscription(Model):
     user = ForeignKey(
@@ -35,4 +36,3 @@ class Subscription(Model):
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
-    

@@ -5,13 +5,14 @@ from djoser.views import UserViewSet
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
                                    HTTP_400_BAD_REQUEST)
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from api.filters import IngredientFilter, RecipeFilter
 from api.paginations import CustomPagination
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from api.serializers import (CustomUserSerializer, IngredientSerializer,
@@ -41,12 +42,14 @@ class CustomUserViewSet(UserViewSet):
         if request.method == 'POST':
             if user.id == author.id:
                 return Response(
-                    {'errors':'Нельзя подписаться на себя'},
+                    {'errors': 'Нельзя подписаться на себя'},
                     status=HTTP_400_BAD_REQUEST
                 )
-            elif Subscription.objects.filter(user=user, author=author).exists():
+            elif Subscription.objects.filter(
+                user=user, author=author
+            ).exists():
                 return Response(
-                    {'errors':'Вы уже подписаны на данного автора'},
+                    {'errors': 'Вы уже подписаны на данного автора'},
                     status=HTTP_400_BAD_REQUEST
                 )
             else:
@@ -58,7 +61,9 @@ class CustomUserViewSet(UserViewSet):
                 return Response(serializer.data, status=HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            subscription = Subscription.objects.filter(user=user, author=author)
+            subscription = Subscription.objects.filter(
+                user=user, author=author
+            )
             if subscription.exists():
                 subscription.delete()
                 return Response(status=HTTP_204_NO_CONTENT)
@@ -87,6 +92,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, SearchFilter)
     search_fields = ('^name',)
+    filterset_class = IngredientFilter
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -102,7 +108,7 @@ class RecipeViewSet(ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
-    # filterset_class = RecipeFilter
+    filterset_class = RecipeFilter
 
     @action(detail=True,
             methods=['post', 'delete'],
@@ -115,17 +121,18 @@ class RecipeViewSet(ModelViewSet):
         if request.method == 'POST':
             if Favorite.objects.filter(user=user, recipe=recipe).exists():
                 return Response(
-                    {'errors':'Вы уже добавили этот рецепт в избранное'},
+                    {'errors': 'Вы уже добавили этот рецепт в избранное'},
                     status=HTTP_400_BAD_REQUEST
                 )
             else:
                 favorite = Favorite.objects.create(
                     user=user, recipe=recipe
                 )
-                serializer = RecipeShortSerializer(recipe,
-                                                context={"request": request})
+                serializer = RecipeShortSerializer(
+                    recipe, context={"request": request}
+                )
                 return Response(serializer.data, status=HTTP_201_CREATED)
-            
+
         elif request.method == 'DELETE':
             favorite = Favorite.objects.filter(user=user, recipe=recipe)
             if favorite.exists():
@@ -138,7 +145,7 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=True,
             methods=['post', 'delete'],
-            permission_classes=[IsAuthenticated])       
+            permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
         """Добавить рецепт в список покупок или удалить """
         user = request.user
@@ -147,17 +154,18 @@ class RecipeViewSet(ModelViewSet):
         if request.method == 'POST':
             if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
                 return Response(
-                    {'errors':'Вы уже добавили этот рецепт в список покупок'},
+                    {'errors': 'Вы уже добавили этот рецепт в список покупок'},
                     status=HTTP_400_BAD_REQUEST
                 )
             else:
                 favorite = ShoppingCart.objects.create(
                     user=user, recipe=recipe
                 )
-                serializer = RecipeShortSerializer(recipe,
-                                                context={"request": request})
+                serializer = RecipeShortSerializer(
+                    recipe, context={"request": request}
+                )
                 return Response(serializer.data, status=HTTP_201_CREATED)
-            
+
         elif request.method == 'DELETE':
             favorite = ShoppingCart.objects.filter(user=user, recipe=recipe)
             if favorite.exists():
@@ -193,18 +201,14 @@ class RecipeViewSet(ModelViewSet):
         response['Content-Disposition'] = (f'attachment; filename={filename}')
         return response
 
-
-#        response = HttpResponse(my_data, headers={
-#...     'Content-Type': 'application/vnd.ms-excel',
-#...     'Content-Disposition': 'attachment; filename="foo.xls"',
-#... })
-
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def perform_destroy(self, instance):
+        instance.image.delete()
+        instance.delete()
+
     def get_serializer_class(self):
-        if self.action =='list' or self.action == 'retrieve':
+        if self.action == 'list' or self.action == 'retrieve':
             return RecipeSerializer
         return RecipeCreateSerializer
-    
-    
