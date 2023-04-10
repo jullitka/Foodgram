@@ -1,7 +1,9 @@
 import base64
-from django.db import transaction
 from django.core.files.base import ContentFile
 from django.core.validators import MinValueValidator
+from django.conf import settings
+from django.core.paginator import Paginator
+from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
@@ -10,8 +12,11 @@ from rest_framework.serializers import (IntegerField, ImageField,
                                         PrimaryKeyRelatedField)
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
-from recipes.models import (Favorite, Ingredient, IngredientRecipe,
-                            Recipe, ShoppingCart, Tag)
+from api.paginations import RecipesPagination
+from api.utils import is_something
+from recipes.models import (Ingredient, IngredientRecipe,
+                            Recipe, Tag)
+from foodgram.settings import RECIPES_LIMIT
 from users.models import User, Subscription
 
 
@@ -100,10 +105,22 @@ class SubscribeSerializer(CustomUserSerializer):
         request = self.context.get('request')
         recipes_limit = request.GET.get('recipes_limit')
         recipes = obj.recipes.all()
+        serializer = RecipeShortSerializer(
+            recipes,
+            many=True,
+            context={'request': request}
+        )
+        paginator = RecipesPagination()
         if recipes_limit:
-            recipes = recipes[:int(recipes_limit)]
-        return RecipeShortSerializer(recipes, many=True).data
-
+            paginator.page_size = recipes_limit
+        else:
+            paginated_data = paginator.paginate_queryset(
+                queryset=serializer.data,
+                request=request
+            )
+            return paginator.get_paginated_response(paginated_data)
+      # return RecipeShortSerializer(recipes, many=True).data 
+ 
 
 class IngredientSerializer(ModelSerializer):
     class Meta:
@@ -222,18 +239,10 @@ class RecipeCreateSerializer(ModelSerializer):
                                 context=context).data
 
     def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        if request.user.is_anonymous:
-            return False
-        return Favorite.objects.filter(recipe=obj, user=request.user).exists()
+        return is_something(self, obj, 'favorite')
 
     def get_is_in_shopping_cart(self, obj):
-        request = self.context.get('request')
-        if request.user.is_anonymous:
-            return False
-        return ShoppingCart.objects.filter(
-            recipe=obj, user=request.user
-        ).exists()
+        return is_something(self, obj, 'shopping_cart')
 
     def validate_ingredients(self, value):
         if not value:
@@ -286,18 +295,10 @@ class RecipeSerializer(ModelSerializer):
         model = Recipe
 
     def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        if request.user.is_anonymous:
-            return False
-        return Favorite.objects.filter(recipe=obj, user=request.user).exists()
+        return is_something(self, obj, 'favorite')
 
     def get_is_in_shopping_cart(self, obj):
-        request = self.context.get('request')
-        if request.user.is_anonymous:
-            return False
-        return ShoppingCart.objects.filter(
-            recipe=obj, user=request.user
-        ).exists()
+        return is_something(self, obj, 'shopping_cart')
 
     def get_ingredients(self, obj):
         ingredients = IngredientRecipe.objects.filter(recipe=obj)
