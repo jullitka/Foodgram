@@ -1,4 +1,5 @@
 import base64
+
 from django.core.files.base import ContentFile
 from django.core.validators import MinValueValidator
 from django.db import transaction
@@ -259,7 +260,7 @@ class RecipeCreateSerializer(ModelSerializer):
             raise ValidationError({
                 'tags': 'Нужно выбрать хотя бы один тег'
             })
-        elif len(value) != len(set(value)):
+        if len(value) != len(set(value)):
             raise ValidationError({
                 'tags': 'Теги не могут повторяться'
             })

@@ -41,7 +41,7 @@ class Ingredient(Model):
     measurement_unit = CharField(
         max_length=10,
         verbose_name='Единица измерения'
-        )
+    )
 
     class Meta:
         verbose_name = 'Ингредиент'

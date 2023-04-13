@@ -185,7 +185,7 @@ class RecipeViewSet(ModelViewSet):
         recipes = [recipe['recipe'] for recipe in shopping_cart]
         buy_list = IngredientRecipe.objects.filter(recipe__in=recipes).values(
             'ingredient__name', 'ingredient__measurement_unit'
-            ).annotate(total_amount=Sum('amount'))
+        ).annotate(total_amount=Sum('amount'))
         ingredients = []
         for ingredient in buy_list:
             ingredient_text = (
