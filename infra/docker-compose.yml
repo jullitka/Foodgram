@@ -8,21 +8,21 @@ services:
       - db_value:/var/lib/postgresql/data/
 
   backend:
-    image: jullitka:foodgram:latest
+    image: jullitka/foodgram_backend:latest
     volumes:
-      - static_backend_value:/app/static/
-      - media_backend_value:/app/media/
+      - static_value:/app/static/
+      - media_value:/app/media/
     depends_on:
       - db
     env_file:
       - ./.env
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: jullitka/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
+    depends_on:
+      - backend
 
   nginx:
     image: nginx:1.19.3
@@ -32,15 +32,15 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
-      - static_backend_value:/app/static/
-      - media_backend_value:/app/media/
+      - static_value:/app/static/
+      - media_value:/app/media/
     depends_on:
-      - fromtend
+      - frontend
       - backend
     
 voluems:
   db_value:
-  static_backend_value:
-  media_backend_value:
+  static_value:
+  media_value:
   
   
