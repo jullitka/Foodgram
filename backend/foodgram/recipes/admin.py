@@ -12,11 +12,11 @@ class IngredientRecipeInline(TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(ModelAdmin):
-    list_display = ('name', 'author', 'total_favorites' )
+    list_display = ('name', 'author', 'total_favorites')
     list_filter = ('author', 'name', 'tags', 'pub_date')
     search_fields = ('author', 'name', 'tags')
     inlines = (IngredientRecipeInline,)
-    
+
     @admin.display(description='В избранном')
     def total_favorites(self, obj):
         return obj.favorites.count()
@@ -48,7 +48,7 @@ class TagAdmin(ModelAdmin):
 class TagRecipeAdmin(ModelAdmin):
     list_display = ('recipe', 'tag')
     list_filters = ('recipe', 'tag')
-    search_fields = ('recipe', 'tag')    
+    search_fields = ('recipe', 'tag')
 
 
 @admin.register(Favorite)
@@ -63,4 +63,3 @@ class ShoppingCartAdmin(ModelAdmin):
     list_display = ('user', 'recipe')
     list_filter = ('user', 'recipe')
     search_fields = ('user', 'recipe')
-

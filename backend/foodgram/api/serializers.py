@@ -5,16 +5,17 @@ from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework.serializers import (IntegerField, ImageField,
-                                        ModelSerializer, SerializerMethodField,
-                                        PrimaryKeyRelatedField)
+from rest_framework.serializers import (ImageField, IntegerField,
+                                        ModelSerializer,
+                                        PrimaryKeyRelatedField,
+                                        SerializerMethodField)
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from api.paginations import RecipesPagination
 from api.utils import is_something
 from recipes.models import (Ingredient, IngredientRecipe,
                             Recipe, Tag)
-from users.models import User, Subscription
+from users.models import Subscription, User
 
 
 class Base64ImageField(ImageField):
@@ -23,7 +24,6 @@ class Base64ImageField(ImageField):
             format, imgstr = data.split(';base64,')
             ext = format.split('/')[-1]
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-
         return super().to_internal_value(data)
 
 
@@ -310,4 +310,3 @@ class RecipeShortSerializer(ModelSerializer):
             'cooking_time'
         )
         model = Recipe
-
