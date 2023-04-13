@@ -144,7 +144,7 @@ class TagRecipe(Model):
 
     class Meta:
         verbose_name = 'Тег рецепта'
-        verbose_name_plural = 'Теги'
+        verbose_name_plural = 'Теги рецепта'
 
 
 class Favorite(Model):

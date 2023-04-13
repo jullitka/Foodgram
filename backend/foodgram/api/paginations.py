@@ -7,6 +7,5 @@ class CustomPagination(PageNumberPagination):
 
 
 class RecipesPagination(PageNumberPagination):
-    page_size = 6
     def get_paginated_response(self, data):
         return data

@@ -1,8 +1,6 @@
 import base64
 from django.core.files.base import ContentFile
 from django.core.validators import MinValueValidator
-from django.conf import settings
-from django.core.paginator import Paginator
 from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.exceptions import ValidationError
@@ -16,7 +14,6 @@ from api.paginations import RecipesPagination
 from api.utils import is_something
 from recipes.models import (Ingredient, IngredientRecipe,
                             Recipe, Tag)
-from foodgram.settings import RECIPES_LIMIT
 from users.models import User, Subscription
 
 
@@ -113,14 +110,12 @@ class SubscribeSerializer(CustomUserSerializer):
         paginator = RecipesPagination()
         if recipes_limit:
             paginator.page_size = recipes_limit
-        else:
             paginated_data = paginator.paginate_queryset(
                 queryset=serializer.data,
                 request=request
             )
             return paginator.get_paginated_response(paginated_data)
-      # return RecipeShortSerializer(recipes, many=True).data 
- 
+
 
 class IngredientSerializer(ModelSerializer):
     class Meta:
@@ -315,3 +310,4 @@ class RecipeShortSerializer(ModelSerializer):
             'cooking_time'
         )
         model = Recipe
+

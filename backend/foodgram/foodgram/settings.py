@@ -1,5 +1,4 @@
 import os
-# from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -26,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'rest_framework',
     'djoser',
     'rest_framework.authtoken',
@@ -113,10 +113,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
-    'DEFAULT_PAGINATION_CLASS': [
-        'api.paginations.CustomPagination',
-    ],
-    'PAGE_SIZE': 6,
 }
 
 DJOSER = {
@@ -134,5 +130,3 @@ DJOSER = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-RECIPES_LIMIT = 6
