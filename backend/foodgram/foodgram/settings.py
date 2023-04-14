@@ -9,12 +9,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'host.docker.internal'
+    '158.160.48.196',
+    'host.docker.internal',
+    'backend'
 ]
 
 AUTH_USER_MODEL = 'users.User'
