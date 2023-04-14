@@ -39,9 +39,8 @@ services:
       - frontend
       - backend
     
-voluems:
+volumes:
   db_value:
   static_value:
   media_value:
-  
-  
+
