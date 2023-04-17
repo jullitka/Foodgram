@@ -11,7 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         params_for_create = []
 
-        file_path = '../../data/ingredients.csv'
+        file_path = 'ingredients.csv'
         with open(file_path, 'r', encoding='utf-8') as file:
             ingredients = csv.reader(file)
             for ingredient in ingredients:
