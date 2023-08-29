@@ -29,7 +29,7 @@
 - Клонировать репозиторий
 
 ```
-git clone https://github.com/jullitka/foodgram-project-react.git
+git clone https://github.com/jullitka/Foodgram.git
 ```
 - Cоздать и активировать виртуальное окружение:
 
