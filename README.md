@@ -1,12 +1,11 @@
 # Проект "Продуктовый помощник"
 ![example workflow](https://github.com/jullitka/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
 
-Проект доступен по адресу http://158.160.48.196/
-
 Онлайн-сервис "Продуктовый помощник" дает возможность публиковать свои рецепты и просматривать рецепты других пользователей, формировать список необходимых ингредиентов из понравившихся рецептов и скачивать его. Доступна регистрация и авторизация пользователей.
 
 ## Возможности:
 - Регистрация на сайте
+- Незарегистрированные пользователи могут только просматривать рецепты.
 - Публикация рецептов
 - Просмотр рецептов других пользователей
 - Подписка на других пользователей
@@ -15,53 +14,85 @@
 - Получение списка необходимых продуктов в виде файла
 
 ## Стек технологий:
-- Python 3.7
-- Django REST framework
-- Django ORM
-- Docker
-- Gunicorn
-- nginx
-- PostgreSQL
-- GIT
+[![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/-Django-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
+[![Django REST Framework](https://img.shields.io/badge/-Django%20REST%20Framework-464646?style=flat-square&logo=Django%20REST%20Framework)](https://www.django-rest-framework.org/)
+[![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-464646?style=flat-square&logo=PostgreSQL)](https://www.postgresql.org/)
+[![docker](https://img.shields.io/badge/-Docker-464646?style=flat-square&logo=docker)](https://www.docker.com/)
+[![Yandex.Cloud](https://img.shields.io/badge/-Yandex.Cloud-464646?style=flat-square&logo=Yandex.Cloud)](https://cloud.yandex.ru/)
+[![Nginx](https://img.shields.io/badge/-NGINX-464646?style=flat-square&logo=NGINX)](https://nginx.org/ru/)
+[![gunicorn](https://img.shields.io/badge/-gunicorn-464646?style=flat-square&logo=gunicorn)](https://gunicorn.org/)
+[![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
 
+## Запуск проекта
 
-
-### Клонирование репозитория
+- Клонировать репозиторий
 
 ```
 git clone https://github.com/jullitka/foodgram-project-react.git
 ```
-### Запуск проекта в контейнерах
-- Перейдите в директорию /infra
-- Cоздайте файл .env, с переменными окружения, используя образец:
+- Cоздать и активировать виртуальное окружение:
+
 ```
-SECRET_KEY = <secret_key>
-ENGINE = django.db.backends.postgresql
-DB_NAME = postgres
-POSTGRES_USER = postgres
-POSTGRES_PASSWORD = postgres
-DB_HOST = localhost
-DB_PORT = 5432
+python -m venv env
+```
+Для Linux
+    ```
+    source venv/bin/activate
+    ```
+    
+Для Windows
+    ```
+    source venv/Scripts/activate
+    ```
+
+- Установить зависимости из файла requirements.txt:
+```
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-- Соберите контейнеры
+## Запуск проекта на удаленном сервере с помощтю GitHub Actions
+
+- #### Установить docker и docker-compose на удаленном сервере.
+- #### Скопировать файлы docker-compose.yml и nginx.conf на удаленный сервер
 ```
-docker-compose up -d --build
+scp docker-compose.yml <username>@<host>:/home/<username>/
+scp nginx.conf <username>@<host>:/home/<username>/
 ```
-- Выполните миграции
+- #### Добавить в Secrets репозитория проекта на github следующие переменные окружения:
+```
+HOST=<ip сервера>
+PASSPHRASE=<пароль для сервера, если он установлен>
+SSH_KEY=<приватный SSH-ключ>
+DOCKER_USERNAME=<имя пользователя DockerHub>
+DOCKER_PASSWORD=<пароль DockerHub>
+USER=<username для подключения к удаленному серверу>
+TELEGRAM_TO=<id Телеграм-аккаунта>
+TELEGRAM_TOKEN=<токен бота>
+```
+- #### После выполнения команды git push запустится workflow:
+- tests: проверка кода на соответствие PEP8 и Pytest.
+- build_and_push_to_docker_hub: сборка и размещение образа проекта на DockerHub.
+- deploy: автоматический деплой на сервер и запуск проекта.
+- send_massage: отправка уведомления пользователю в Телеграм о том, что проект успешно запущен.
+
+В случае успешного выполнения предыдущего пункта на сервере необходимо выполнить следующие команды:
+
+- #### Выполнить миграции:
 ```
 docker-compose exec backend python manage.py makemigrations
 docker-compose exec backend python manage.py migrate
 ```
-- Соберите статику
+- #### Собрать статику
 ```
 docker-compose exec backend python manage.py collectstatic
 ```
-- Создайте суперпользователя
+- #### Создать суперпользователя
 ```
 docker-compose exec backend python manage.py createsuperuser
 ```
-- Наполните базу данных ингредиентами
+- #### Наполнить базу данных ингредиентами
 ```
 docker-compose exec backend python manage.py import_ingredients
 ```
@@ -139,3 +170,8 @@ POST-запрос к /recipes/
   "cooking_time": 1
 }
 ```
+Документация доступна после запуска по адресу: http://localhost/api/docs/redoc.html.
+
+## Авторы
+[Юлия Пашкова](https://github.com/Jullitka)
+
