@@ -24,7 +24,6 @@
 [![gunicorn](https://img.shields.io/badge/-gunicorn-464646?style=flat-square&logo=gunicorn)](https://gunicorn.org/)
 [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
 
-Документация доступна после запуска по адресу: http://localhost/api/docs/redoc.html.
 
 ## Запуск проекта
 
@@ -98,6 +97,8 @@ docker-compose exec backend python manage.py createsuperuser
 ```
 docker-compose exec backend python manage.py import_ingredients
 ```
+
+Документация доступна после запуска по адресу: http://localhost/api/docs/redoc.html.
 
 ## API
 
