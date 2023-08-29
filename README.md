@@ -24,6 +24,8 @@
 [![gunicorn](https://img.shields.io/badge/-gunicorn-464646?style=flat-square&logo=gunicorn)](https://gunicorn.org/)
 [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
 
+Документация доступна после запуска по адресу: http://localhost/api/docs/redoc.html.
+
 ## Запуск проекта
 
 - Клонировать репозиторий
@@ -170,7 +172,6 @@ POST-запрос к /recipes/
   "cooking_time": 1
 }
 ```
-Документация доступна после запуска по адресу: http://localhost/api/docs/redoc.html.
 
 ## Авторы
 [Юлия Пашкова](https://github.com/Jullitka)
