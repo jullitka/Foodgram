@@ -1,6 +1,11 @@
 name: Foodgram workflow
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'frontend/**'
 
 jobs:
   tests:
