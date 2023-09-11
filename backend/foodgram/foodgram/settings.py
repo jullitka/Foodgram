@@ -12,12 +12,11 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 DEBUG = False
 
 ALLOWED_HOSTS = [
+    '158.160.48.196',
     'localhost',
     '127.0.0.1',
     '[::1]',
-    '158.160.48.196',
-    'host.docker.internal',
-    'backend'
+    'host.docker.internal'
 ]
 
 AUTH_USER_MODEL = 'users.User'

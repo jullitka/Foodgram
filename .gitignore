@@ -130,3 +130,10 @@ dmypy.json
 
 # .idea
 .idea
+<<<<<<< HEAD
+=======
+
+media/
+
+infra_dev/
+>>>>>>> 9e44144545955a3450bd35da81179d8a4ecf5d61
